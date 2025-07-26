@@ -12,4 +12,4 @@ plugins {
 }
 
 rootProject.name = "recipes-cart"
-include("lib")
+include("domain")
