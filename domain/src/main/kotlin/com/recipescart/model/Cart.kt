@@ -5,7 +5,7 @@ typealias CartId = Int
 data class Cart(
     val id: CartId,
     val totalInCents: Int,
-    val items: List<CartItem>
+    val items: List<CartItem>,
 )
 
-interface CartItem;
+interface CartItem
