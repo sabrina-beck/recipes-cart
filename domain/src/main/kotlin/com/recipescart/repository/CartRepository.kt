@@ -7,10 +7,18 @@ import com.recipescart.model.RecipeId
 interface CartRepository {
     fun getCartById(id: CartId): Cart
 
-    fun addRecipe(
+    sealed interface UpsertRecipeResult {
+        object Success : UpsertRecipeResult
+
+        object RecipeNotFound : UpsertRecipeResult
+
+        object CartNotFound : UpsertRecipeResult
+    }
+
+    fun upsertRecipe(
         id: CartId,
         recipe: RecipeId,
-    )
+    ): UpsertRecipeResult
 
     fun removeRecipe(
         id: CartId,
