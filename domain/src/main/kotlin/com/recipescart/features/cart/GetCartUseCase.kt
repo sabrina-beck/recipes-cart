@@ -1,8 +1,8 @@
-package com.recipes_cart.features.cart
+package com.recipescart.features.cart
 
-import com.recipes_cart.model.Cart
-import com.recipes_cart.model.CartId
-import com.recipes_cart.repository.CartRepository
+import com.recipescart.model.Cart
+import com.recipescart.model.CartId
+import com.recipescart.repository.CartRepository
 
 class GetCartUseCase(
     val cartRepository: CartRepository,

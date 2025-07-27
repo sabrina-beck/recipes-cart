@@ -1,7 +1,7 @@
-package com.recipes_cart.features.recipe
+package com.recipescart.features.recipe
 
-import com.recipes_cart.model.Recipe
-import com.recipes_cart.repository.RecipeRepository
+import com.recipescart.model.Recipe
+import com.recipescart.repository.RecipeRepository
 
 class GetRecipesUseCase(
     val recipeRepository: RecipeRepository,

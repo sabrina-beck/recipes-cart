@@ -1,4 +1,4 @@
-package com.recipes_cart.model
+package com.recipescart.model
 
 typealias CartId = Int
 

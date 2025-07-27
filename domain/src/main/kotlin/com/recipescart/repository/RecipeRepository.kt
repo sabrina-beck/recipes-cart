@@ -1,6 +1,6 @@
-package com.recipes_cart.repository
+package com.recipescart.repository
 
-import com.recipes_cart.model.Recipe
+import com.recipescart.model.Recipe
 
 interface RecipeRepository {
     fun getRecipes(): List<Recipe>

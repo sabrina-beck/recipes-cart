@@ -1,8 +1,8 @@
-package com.recipes_cart.repository
+package com.recipescart.repository
 
-import com.recipes_cart.model.Cart
-import com.recipes_cart.model.CartId
-import com.recipes_cart.model.RecipeId
+import com.recipescart.model.Cart
+import com.recipescart.model.CartId
+import com.recipescart.model.RecipeId
 
 interface CartRepository {
     fun getCartById(id: CartId): Cart

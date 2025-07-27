@@ -13,3 +13,5 @@ plugins {
 
 rootProject.name = "recipes-cart"
 include("domain")
+
+include("output:postgres")
