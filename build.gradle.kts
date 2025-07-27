@@ -32,7 +32,7 @@ allprojects {
     }
 
     dependencies {
-        testImplementation("org.jetbrains.kotlin:kotlin-test:2.2.0")
+        testImplementation("org.jetbrains.kotlin:kotlin-test:${property("kotlin.test.version")}")
         testImplementation("org.jetbrains.kotlin:kotlin-reflect")
     }
 }

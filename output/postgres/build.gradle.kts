@@ -7,8 +7,15 @@ repositories {
 }
 
 dependencies {
-    implementation("org.flywaydb:flyway-core:11.10.4")
-    implementation("org.postgresql:postgresql:42.7.7")
+    implementation(project(":domain"))
+    implementation("org.flywaydb:flyway-core:${property("flyway.version")}")
+    implementation("org.flywaydb:flyway-database-postgresql:${property("flyway.version")}")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc:${property("springBoot.version")}")
+
+    testImplementation(testFixtures(project(":domain")))
+    testImplementation("org.testcontainers:testcontainers:${property("testcontainers.version")}")
+    testImplementation("org.testcontainers:postgresql:${property("testcontainers.version")}")
+    testImplementation("org.postgresql:postgresql:${property("postgresql.jdbc.version")}")
 }
 
 buildscript {
@@ -16,8 +23,8 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.flywaydb:flyway-database-postgresql:11.10.4")
-        classpath("org.postgresql:postgresql:42.7.7")
+        classpath("org.flywaydb:flyway-database-postgresql:${property("flyway.version")}")
+        classpath("org.postgresql:postgresql:${property("postgresql.jdbc.version")}")
     }
 }
 

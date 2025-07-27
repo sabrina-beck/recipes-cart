@@ -5,10 +5,10 @@ CREATE TABLE recipes (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE recipe_products (
+CREATE TABLE recipe_ingredients (
     recipe_id INT,
     product_id INT,
-    quantity NUMERIC NOT NULL CHECK (quantity > 0),
+    quantity INT NOT NULL CHECK (quantity > 0),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
