@@ -100,6 +100,17 @@ To run the application with Spring Boot DevTools enabled (which supports hot rel
 make dev
 ```
 
+### 📬 Bruno API Collection
+
+You can use the [Bruno](https://www.usebruno.com/) collection under the `bruno/` directory to explore and test the available HTTP endpoints.
+
+To open it:
+1. Install Bruno
+2. Open the `bruno/` folder in the Bruno app
+3. Make sure the application is running (`make up` or `make dev`)
+4. Hit the endpoints locally via the preconfigured requests
+
+
 ### 📈 Observability with Spring Boot Actuator
 This project includes Spring Boot Actuator to provide basic health and metrics endpoints:
 
@@ -149,6 +160,16 @@ The app module is the entry point of the application. It:
 - Configures dependency injection for use cases and repository implementations.
 
 Starts the HTTP server and provides runtime configuration.
+
+### 🧪 Testing Strategy
+
+The testing approach reflects the project’s modular architecture:
+
+- **Unit tests** focus on isolated business logic inside the `domain` module (e.g. UseCases, value objects).
+- **Integration tests** are implemented in each port module (e.g. `output/postgres`) to verify persistence behavior with a real PostgreSQL container using Testcontainers.
+- **End-to-end integration tests** run in the `app` module and call the system through the input ports (HTTP API). These tests boot the full application and validate actual runtime behavior.
+
+This structure ensures each module can be tested in isolation and promotes confidence in the application end-to-end.
 
 ### ✅ Benefits of this architecture
 - **Separation of concerns**: Business logic is completely isolated from external systems and how data is received or exposed.
