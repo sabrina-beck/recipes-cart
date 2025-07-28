@@ -28,40 +28,42 @@ fun Map<String, Any>.toCart(items: List<CartItemWithQuantity>): Cart {
     return cart
 }
 
-fun List<Map<String, Any>>.toCartItemWithQuatities(
-    recipeRepository: RecipeRepository,
-    productRepository: ProductRepository,
-): List<CartItemWithQuantity> {
-    val recipesById =
-        this
-            .toRecipes(recipeRepository)
-            .associateBy { it.id }
+class CartDbAdapter(
+    private val productRepository: ProductRepository,
+    private val recipeRepository: RecipeRepository,
+) {
+    fun List<Map<String, Any>>.toCartItemWithQuatities(): List<CartItemWithQuantity> {
+        val recipesById =
+            this
+                .toRecipes()
+                .associateBy { it.id }
 
-    val productsById =
-        this
-            .toProducts(productRepository)
-            .associateBy { it.id }
+        val productsById =
+            this
+                .toProducts()
+                .associateBy { it.id }
 
-    return this.mapNotNull { row ->
-        val itemId = row[ITEM_ID_COLUMN] as Int
-        when (row[ITEM_TYPE_COLUMN]) {
-            CartItemType.RECIPE.value -> recipesById[itemId]
-            CartItemType.PRODUCT.value -> productsById[itemId]
-            else -> null
-        }?.let {
-            CartItemWithQuantity(item = it, quantity = row[QUANTITY_COLUMN] as Int)
+        return this.mapNotNull { row ->
+            val itemId = row[ITEM_ID_COLUMN] as Int
+            when (row[ITEM_TYPE_COLUMN]) {
+                CartItemType.RECIPE.value -> recipesById[itemId]
+                CartItemType.PRODUCT.value -> productsById[itemId]
+                else -> null
+            }?.let {
+                CartItemWithQuantity(item = it, quantity = row[QUANTITY_COLUMN] as Int)
+            }
         }
     }
+
+    fun List<Map<String, Any>>.toRecipes(): List<Recipe> =
+        this
+            .filter { it[ITEM_TYPE_COLUMN] == CartItemType.RECIPE.value }
+            .map { it[ITEM_ID_COLUMN] as Int }
+            .let { recipeRepository.getRecipesByIds(it) }
+
+    fun List<Map<String, Any>>.toProducts(): List<Product> =
+        this
+            .filter { it[ITEM_TYPE_COLUMN] == CartItemType.PRODUCT.value }
+            .map { it[ITEM_ID_COLUMN] as Int }
+            .let { productRepository.getProductsByIds(it) }
 }
-
-fun List<Map<String, Any>>.toRecipes(recipeRepository: RecipeRepository): List<Recipe> =
-    this
-        .filter { it[ITEM_TYPE_COLUMN] == CartItemType.RECIPE.value }
-        .map { it[ITEM_ID_COLUMN] as Int }
-        .let { recipeRepository.getRecipesByIds(it) }
-
-fun List<Map<String, Any>>.toProducts(productRepository: ProductRepository): List<Product> =
-    this
-        .filter { it[ITEM_TYPE_COLUMN] == CartItemType.PRODUCT.value }
-        .map { it[ITEM_ID_COLUMN] as Int }
-        .let { productRepository.getProductsByIds(it) }

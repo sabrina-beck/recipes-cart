@@ -1,6 +1,6 @@
 # Tech Debt to look before delivery
 - Repositories on fixture seeds
-- Repositories on cart adapters
+- Domain unit tests
 
 # Decision-making process
 ## Idempotency

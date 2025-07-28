@@ -5,11 +5,10 @@ import com.recipescart.model.CartId
 import com.recipescart.model.CartItem
 import com.recipescart.model.CartItemWithQuantity
 import com.recipescart.model.RecipeId
+import com.recipescart.postgres.adapters.CartDbAdapter
 import com.recipescart.postgres.adapters.toCart
-import com.recipescart.postgres.adapters.toCartItemWithQuatities
 import com.recipescart.postgres.utils.isForeignKeyViolation
 import com.recipescart.repository.CartRepository
-import com.recipescart.repository.ProductRepository
 import com.recipescart.repository.RecipeRepository
 import com.recipescart.repository.UpsertItemInCart
 import com.recipescart.repository.UpsertItemInCartResult
@@ -33,7 +32,7 @@ data class CartItemId(
 
 class CartRepositoryPostgres(
     private val jdbcTemplate: JdbcTemplate,
-    private val productRepository: ProductRepository,
+    private val cartDbAdapter: CartDbAdapter,
     private val recipeRepository: RecipeRepository,
 ) : CartRepository {
     companion object {
@@ -80,7 +79,10 @@ class CartRepositoryPostgres(
             """.trimIndent()
         val itemRows = jdbcTemplate.queryForList(cartItemsSql, id)
 
-        val items: List<CartItemWithQuantity> = itemRows.toCartItemWithQuatities(recipeRepository, productRepository)
+        val items: List<CartItemWithQuantity> =
+            with(cartDbAdapter) {
+                itemRows.toCartItemWithQuatities()
+            }
 
         return cartRow.toCart(items)
     }

@@ -4,6 +4,7 @@ import com.recipescart.fixtures.aRecipe
 import com.recipescart.model.Cart
 import com.recipescart.model.CartItemWithQuantity
 import com.recipescart.postgres.SharedPostgresContainer
+import com.recipescart.postgres.adapters.CartDbAdapter
 import com.recipescart.repository.CartRepository
 import com.recipescart.repository.ProductRepository
 import com.recipescart.repository.RecipeRepository
@@ -36,7 +37,7 @@ class CartRepositoryPostgresTest {
         this.cartRepository =
             CartRepositoryPostgres(
                 jdbc,
-                this.productRepository,
+                CartDbAdapter(productRepository, recipeRepository),
                 this.recipeRepository,
             )
     }
