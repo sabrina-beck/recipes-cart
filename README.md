@@ -3,6 +3,7 @@
 - Http server module
 - App module
 - End to end test
+- Use auto generated id for recipe and product
 
 # Decision-making process
 ## Idempotency
