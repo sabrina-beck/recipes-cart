@@ -1,9 +1,8 @@
 # To Do
-- Domain unit tests
+- Use auto generated id for recipe and product
 - Http server module
 - App module
 - End to end test
-- Use auto generated id for recipe and product
 
 # Decision-making process
 ## Idempotency
