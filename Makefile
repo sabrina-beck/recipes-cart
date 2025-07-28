@@ -11,6 +11,9 @@ lint:
 lint-fix:
 	$(GRADLE) ktlintFormat
 
+coverage:
+	$(GRADLE) test jacocoRootReport
+
 test:
 	$(GRADLE) test --parallel
 

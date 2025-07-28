@@ -5,6 +5,8 @@
 ![PostgreSQL](https://img.shields.io/badge/postgreSQL-16-blue?logo=postgresql)
 ![Docker](https://img.shields.io/badge/docker-ready-blue?logo=docker)
 ![Build](https://img.shields.io/badge/build-gradle-success?logo=gradle)
+![CI](https://github.com/sabrinabeck/recipes-cart/actions/workflows/ci.yml/badge.svg)
+
 
 This project extends a basic e-commerce platform to support the purchase of entire recipes. 
 Instead of adding products individually to the cart, users can now add a complete recipe — which includes multiple 
