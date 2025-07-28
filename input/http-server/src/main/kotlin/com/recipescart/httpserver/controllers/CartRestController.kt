@@ -1,6 +1,7 @@
 package com.recipescart.httpserver.controllers
 
 import com.recipescart.features.cart.GetCartUseCase
+import com.recipescart.features.cart.NewCartUseCase
 import com.recipescart.features.cart.RemoveRecipeFromCartUseCase
 import com.recipescart.features.cart.UpsertRecipeInCartUseCase
 import com.recipescart.httpserver.adapters.cart.toApi
@@ -21,10 +22,17 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/carts")
 class CartRestController(
+    private val newCartUseCase: NewCartUseCase,
     private val getCartUseCase: GetCartUseCase,
     private val upsertRecipeInCartUseCase: UpsertRecipeInCartUseCase,
     private val removeRecipeFromCartUseCase: RemoveRecipeFromCartUseCase,
 ) {
+    @PostMapping
+    fun newCart(): ResponseEntity<CartApi> {
+        val cart = newCartUseCase.execute()
+        return ResponseEntity.ok(cart.toApi())
+    }
+
     @GetMapping("/{id}")
     fun getCartById(
         @PathVariable id: Int,

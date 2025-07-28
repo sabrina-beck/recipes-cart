@@ -17,3 +17,5 @@ include("domain")
 include("output:postgres")
 
 include("input:http-server")
+
+include("app")

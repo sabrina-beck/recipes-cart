@@ -10,7 +10,7 @@ dependencies {
     implementation(project(":domain"))
     implementation("org.flywaydb:flyway-core:${property("flyway.version")}")
     implementation("org.flywaydb:flyway-database-postgresql:${property("flyway.version")}")
-    implementation("org.springframework.boot:spring-boot-starter-jdbc:${property("springBoot.version")}")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc:${property("spring-boot.version")}")
     implementation("org.postgresql:postgresql:${property("postgresql.jdbc.version")}")
 
     testImplementation(testFixtures(project(":domain")))

@@ -29,11 +29,31 @@ wait-db:
 	done
 	@echo "✅ Postgres is ready!"
 
+## 🗄️ Create application database inside Postgres container
+create-db:
+	@echo "🗄️ Creating 'recipescart' database if not exists..."
+	@docker exec recipes-cart-db sh -c "\
+		psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'recipescart'\" | grep -q 1 || \
+		createdb -U postgres recipescart"
+	@echo "✅ Database 'recipescart' is ready."
+
+## 🌱 Run local-only seed data after migrations
+seed-local:
+	@echo "🌱 Seeding local database..."
+	@cat output/postgres/src/main/resources/seed/local_seed.sql | docker exec -i recipes-cart-db psql -U postgres -d recipes-cart
+	@echo "✅ Local database seeded!"
+
 ## 🚀 Start PostgreSQL container (in background)
 up: build
 	docker compose -f $(COMPOSE_FILE) up -d
 	make wait-db
+	make create-db
 	make migrate
+	make seed-local
+
+## 🚀 Run the Spring Boot application
+run:
+	$(GRADLE) :app:bootRun
 
 ## 🛑 Stop PostgreSQL container (but keep volumes)
 down:

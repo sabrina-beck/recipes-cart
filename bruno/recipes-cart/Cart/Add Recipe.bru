@@ -1,0 +1,26 @@
+meta {
+  name: Add Recipe
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/carts/:id/add_recipe
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: {{_cart-id}}
+}
+
+body:json {
+  {
+    "recipeId": 1,
+    "quantity": 2
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,20 @@
+meta {
+  name: Remove Recipe
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/carts/:id/recipes/:recipeId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: {{_cart-id}}
+  recipeId: 1
+}
+
+settings {
+  encodeUrl: true
+}
