@@ -1,5 +1,11 @@
 # Recipes Cart Application
 
+![Kotlin](https://img.shields.io/badge/kotlin-2.1.20-blue?logo=kotlin)
+![Spring Boot](https://img.shields.io/badge/spring--boot-3.3.0-green?logo=spring)
+![PostgreSQL](https://img.shields.io/badge/postgreSQL-16-blue?logo=postgresql)
+![Docker](https://img.shields.io/badge/docker-ready-blue?logo=docker)
+![Build](https://img.shields.io/badge/build-gradle-success?logo=gradle)
+
 This project extends a basic e-commerce platform to support the purchase of entire recipes. 
 Instead of adding products individually to the cart, users can now add a complete recipe — which includes multiple 
 ingredients — in a single request. 

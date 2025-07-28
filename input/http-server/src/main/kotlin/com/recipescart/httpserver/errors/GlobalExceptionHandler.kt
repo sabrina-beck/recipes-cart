@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 
 @ControllerAdvice
 class GlobalExceptionHandler {
-
     private val logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
 
     @ExceptionHandler(IllegalArgumentException::class)
@@ -25,7 +24,7 @@ class GlobalExceptionHandler {
         return ResponseEntity(
             ErrorResponse(
                 error = Error.INTERNAL_SERVER_ERROR,
-                message = Error.INTERNAL_SERVER_ERROR.message!!
+                message = Error.INTERNAL_SERVER_ERROR.message!!,
             ),
             HttpStatus.INTERNAL_SERVER_ERROR,
         )
