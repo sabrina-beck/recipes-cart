@@ -17,7 +17,7 @@ coverage:
 test:
 	$(GRADLE) test --parallel
 
-pre-commit: lint-fix test
+pre-commit: lint test
 
 install-hooks:
 	cp scripts/hooks/pre-commit .git/hooks/pre-commit
