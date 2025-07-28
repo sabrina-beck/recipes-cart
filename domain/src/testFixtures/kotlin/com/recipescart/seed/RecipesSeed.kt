@@ -15,7 +15,7 @@ class RecipesSeed(
     private val recipeRepository: RecipeRepository,
 ) {
     fun givenExistentRecipes(): List<Recipe> =
-        (0..Random.nextInt(2..20))
+        (1..Random.nextInt(2..20))
             .map { givenExistentRecipe(it) }
 
     fun givenExistentRecipe(recipeId: RecipeId): Recipe {

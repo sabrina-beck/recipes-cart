@@ -1,14 +1,14 @@
 package com.recipescart.httpserver.api.cart
 
-import com.recipescart.httpserver.api.cartitem.CartItemApi
+import com.recipescart.httpserver.api.cartitem.ItemApi
 
 data class CartApi(
     val id: Int,
     val totalInCents: Int,
-    val items: List<CartItemWithQuantityApi>,
+    val items: List<CartItemApi>,
 )
 
-data class CartItemWithQuantityApi(
-    val item: CartItemApi,
+data class CartItemApi(
+    val item: ItemApi,
     val quantity: Int,
 )

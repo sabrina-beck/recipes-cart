@@ -17,7 +17,7 @@ class CartTest {
         val cart =
             Cart(
                 id = 1,
-                items = listOf(CartItemWithQuantity(item, quantity = 3)),
+                items = listOf(CartItem(item, quantity = 3)),
             )
 
         assertEquals(600, cart.totalInCents)
@@ -30,8 +30,8 @@ class CartTest {
 
         val items =
             listOf(
-                CartItemWithQuantity(item1, quantity = 2),
-                CartItemWithQuantity(item2, quantity = 1),
+                CartItem(item1, quantity = 2),
+                CartItem(item2, quantity = 1),
             )
 
         val cart = Cart(id = 1, items = items)
@@ -42,7 +42,7 @@ class CartTest {
     @Test
     fun `CartItemWithQuantity should calculate totalInCents correctly`() {
         val item = Product(id = 1, name = "Flour", priceInCents = 90)
-        val wrapper = CartItemWithQuantity(item, quantity = 4)
+        val wrapper = CartItem(item, quantity = 4)
 
         assertEquals(360, wrapper.totalInCents())
     }

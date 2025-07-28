@@ -4,14 +4,18 @@ typealias CartId = Int
 
 data class Cart(
     val id: CartId,
-    val items: List<CartItemWithQuantity> = emptyList(),
+    val items: List<CartItem> = emptyList(),
 ) {
     val totalInCents: Int = items.sumOf { it.item.priceInCents() * it.quantity }
 }
 
-data class CartItemWithQuantity(
-    val item: CartItem,
+data class CartItem(
+    val item: Item,
     val quantity: Int,
 ) {
+    init {
+        require(quantity > 0) { "Cart item quantity must be greater than 0" }
+    }
+
     fun totalInCents(): Int = this.item.priceInCents() * this.quantity
 }

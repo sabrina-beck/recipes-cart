@@ -1,5 +1,5 @@
 services:
-  postgres:
+  db:
     image: postgres:16
     container_name: recipes-cart-db
     restart: unless-stopped
@@ -11,6 +11,36 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+
+  migrator:
+    image: flyway/flyway:9.22
+    depends_on:
+      - db
+    volumes:
+      - ./output/postgres/src/main/resources/db/migration:/flyway/sql
+      - ./output/postgres/src/main/resources/seed:/seed
+    entrypoint: >
+      sh -c "
+        echo '⏳ Waiting for database...';
+        until pg_isready -h db -U postgres > /dev/null 2>&1; do sleep 1; done;
+        echo '✅ Running Flyway migration...';
+        flyway -url=jdbc:postgresql://db:5432/recipescart -user=postgres -password=postgres migrate;
+        echo '🌱 Seeding database...';
+        psql -h db -U postgres -d recipescart -f /seed/local_seed.sql;
+      "
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/recipes-cart
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "8080:8080"
 
 volumes:
   postgres-data:

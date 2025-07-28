@@ -3,7 +3,7 @@ package com.recipescart.httpserver.adapters.cart
 import com.recipescart.httpserver.api.cartitem.ProductApi
 import com.recipescart.httpserver.api.cartitem.RecipeApi
 import com.recipescart.model.Cart
-import com.recipescart.model.CartItemWithQuantity
+import com.recipescart.model.CartItem
 import com.recipescart.model.Ingredient
 import com.recipescart.model.Product
 import com.recipescart.model.Recipe
@@ -38,8 +38,8 @@ class CartApiAdapterTest {
                 id = 99,
                 items =
                     listOf(
-                        CartItemWithQuantity(item = product, quantity = 3),
-                        CartItemWithQuantity(item = recipe, quantity = 1),
+                        CartItem(item = product, quantity = 3),
+                        CartItem(item = recipe, quantity = 1),
                     ),
             )
 

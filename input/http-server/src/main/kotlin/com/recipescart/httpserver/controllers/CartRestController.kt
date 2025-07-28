@@ -8,6 +8,8 @@ import com.recipescart.httpserver.adapters.cart.toApi
 import com.recipescart.httpserver.adapters.cart.toDomain
 import com.recipescart.httpserver.api.cart.CartApi
 import com.recipescart.httpserver.api.cart.UpsertRecipeInCartApi
+import com.recipescart.httpserver.errors.Error
+import com.recipescart.httpserver.errors.ErrorResponse
 import com.recipescart.repository.UpsertItemInCartResult
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -56,9 +58,15 @@ class CartRestController(
             )
 
         return when (result) {
-            UpsertItemInCartResult.Success -> ResponseEntity.ok().build()
-            UpsertItemInCartResult.ItemNotFound -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Recipe not found")
-            UpsertItemInCartResult.CartNotFound -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cart not found")
+            UpsertItemInCartResult.Success -> ResponseEntity.noContent().build()
+            UpsertItemInCartResult.ItemNotFound ->
+                ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(ErrorResponse(error = Error.RECIPE_NOT_FOUND, message = Error.RECIPE_NOT_FOUND.message!!))
+            UpsertItemInCartResult.CartNotFound ->
+                ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(ErrorResponse(error = Error.CART_NOT_FOUND, message = Error.CART_NOT_FOUND.message!!))
         }
     }
 

@@ -1,7 +1,7 @@
 package com.recipescart.postgres.adapters
 
 import com.recipescart.model.Cart
-import com.recipescart.model.CartItemWithQuantity
+import com.recipescart.model.CartItem
 import com.recipescart.model.Product
 import com.recipescart.model.Recipe
 import com.recipescart.postgres.repository.CartItemType
@@ -13,7 +13,7 @@ import com.recipescart.postgres.repository.CartRepositoryPostgres.Companion.TOTA
 import com.recipescart.repository.ProductRepository
 import com.recipescart.repository.RecipeRepository
 
-fun Map<String, Any>.toCart(items: List<CartItemWithQuantity>): Cart {
+fun Map<String, Any>.toCart(items: List<CartItem>): Cart {
     val cart =
         Cart(
             id = this[ID_COLUMN] as Int,
@@ -32,7 +32,7 @@ class CartDbAdapter(
     private val productRepository: ProductRepository,
     private val recipeRepository: RecipeRepository,
 ) {
-    fun List<Map<String, Any>>.toCartItemWithQuatities(): List<CartItemWithQuantity> {
+    fun List<Map<String, Any>>.toCartItemWithQuatities(): List<CartItem> {
         val recipesById =
             this
                 .toRecipes()
@@ -50,7 +50,7 @@ class CartDbAdapter(
                 CartItemType.PRODUCT.value -> productsById[itemId]
                 else -> null
             }?.let {
-                CartItemWithQuantity(item = it, quantity = row[QUANTITY_COLUMN] as Int)
+                CartItem(item = it, quantity = row[QUANTITY_COLUMN] as Int)
             }
         }
     }

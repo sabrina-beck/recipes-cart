@@ -3,7 +3,7 @@ package com.recipescart.postgres.repository
 import com.recipescart.model.Cart
 import com.recipescart.model.CartId
 import com.recipescart.model.CartItem
-import com.recipescart.model.CartItemWithQuantity
+import com.recipescart.model.Item
 import com.recipescart.model.RecipeId
 import com.recipescart.postgres.adapters.CartDbAdapter
 import com.recipescart.postgres.adapters.toCart
@@ -79,7 +79,7 @@ class CartRepositoryPostgres(
             """.trimIndent()
         val itemRows = jdbcTemplate.queryForList(cartItemsSql, id)
 
-        val items: List<CartItemWithQuantity> =
+        val items: List<CartItem> =
             with(cartDbAdapter) {
                 itemRows.toCartItemWithQuatities()
             }
@@ -93,15 +93,15 @@ class CartRepositoryPostgres(
             recipeRepository.getRecipeById(input.itemId)
                 ?: return UpsertItemInCartResult.ItemNotFound
 
-        val newCartItemWithQuantity =
-            CartItemWithQuantity(
+        val newCartItem =
+            CartItem(
                 item = recipe,
                 quantity = input.quantity,
             )
         return upsertCartItem(
             input.cartId,
             CartItemType.RECIPE,
-            newCartItemWithQuantity,
+            newCartItem,
         )
     }
 
@@ -117,7 +117,7 @@ class CartRepositoryPostgres(
                 itemType = CartItemType.RECIPE,
             )
         val recipe = recipeRepository.getRecipeById(recipeId)
-        removeCartItem(cartItemId = cartItemId, cartItem = recipe)
+        removeCartItem(cartItemId = cartItemId, item = recipe)
     }
 
     override fun newCart(): Cart {
@@ -141,35 +141,36 @@ class CartRepositoryPostgres(
     private fun upsertCartItem(
         cartId: CartId,
         itemType: CartItemType,
-        cartItemWithQuantity: CartItemWithQuantity,
+        cartItem: CartItem,
     ): UpsertItemInCartResult {
         val previousRecipeCartItem =
-            CartItemWithQuantity(
-                item = cartItemWithQuantity.item,
-                quantity =
-                    getCartItemQuantity(
-                        CartItemId(cartId = cartId, itemId = cartItemWithQuantity.item.id, itemType = itemType),
-                    ),
-            )
+            getCartItemQuantity(
+                CartItemId(cartId = cartId, itemId = cartItem.item.id, itemType = itemType),
+            )?.let {
+                CartItem(
+                    item = cartItem.item,
+                    quantity = it,
+                )
+            }
 
         val upsertCartItemResult =
             upsertCartItemOnly(
                 cartId = cartId,
                 itemType = CartItemType.RECIPE,
-                cartItemWithQuantity = cartItemWithQuantity,
+                cartItem = cartItem,
             )
         if (upsertCartItemResult != UpsertItemInCartResult.Success) return upsertCartItemResult
 
         updateCartTotalInCents(
             cartId = cartId,
-            previousCartItemWithQuantity = previousRecipeCartItem,
-            newCartItemWithQuantity = cartItemWithQuantity,
+            previousCartItem = previousRecipeCartItem,
+            newCartItem = cartItem,
         )
 
         return UpsertItemInCartResult.Success
     }
 
-    private fun getCartItemQuantity(cartItemId: CartItemId): Int {
+    private fun getCartItemQuantity(cartItemId: CartItemId): Int? {
         val sql =
             """
             SELECT
@@ -188,14 +189,14 @@ class CartRepositoryPostgres(
                 cartItemId.itemId,
             )
         } catch (_: EmptyResultDataAccessException) {
-            0
+            null
         }
     }
 
     private fun upsertCartItemOnly(
         cartId: CartId,
         itemType: CartItemType,
-        cartItemWithQuantity: CartItemWithQuantity,
+        cartItem: CartItem,
     ): UpsertItemInCartResult {
         val cartItemsSql =
             """
@@ -217,9 +218,9 @@ class CartRepositoryPostgres(
             jdbcTemplate.update(
                 cartItemsSql,
                 cartId,
-                cartItemWithQuantity.item.id,
-                cartItemWithQuantity.quantity,
-                cartItemWithQuantity.quantity,
+                cartItem.item.id,
+                cartItem.quantity,
+                cartItem.quantity,
             )
 
             UpsertItemInCartResult.Success
@@ -234,11 +235,13 @@ class CartRepositoryPostgres(
 
     private fun updateCartTotalInCents(
         cartId: CartId,
-        previousCartItemWithQuantity: CartItemWithQuantity,
-        newCartItemWithQuantity: CartItemWithQuantity,
+        previousCartItem: CartItem?,
+        newCartItem: CartItem,
     ) {
-        require(previousCartItemWithQuantity.item == newCartItemWithQuantity.item) {
-            "Cart items with quantity must be of the same item :: previous = $previousCartItemWithQuantity, new = $newCartItemWithQuantity"
+        if (previousCartItem != null) {
+            require(previousCartItem.item == newCartItem.item) {
+                "Cart items with quantity must be of the same item :: previous = $previousCartItem, new = $newCartItem"
+            }
         }
 
         val cartSql =
@@ -251,23 +254,23 @@ class CartRepositoryPostgres(
             """.trimIndent()
         jdbcTemplate.update(
             cartSql,
-            previousCartItemWithQuantity.totalInCents(),
-            newCartItemWithQuantity.totalInCents(),
+            previousCartItem?.totalInCents() ?: 0,
+            newCartItem.totalInCents(),
             cartId,
         )
     }
 
     private fun removeCartItem(
         cartItemId: CartItemId,
-        cartItem: CartItem?,
+        item: Item?,
     ) {
-        val cartItemQuantity = getCartItemQuantity(cartItemId)
+        val cartItemQuantity = getCartItemQuantity(cartItemId) ?: return
         removeCartItemOnly(cartItemId)
 
-        cartItem?.let {
+        item?.let {
             removeCartItemFromTotalInCents(
                 cartId = cartItemId.cartId,
-                cartItemWithQuantity = CartItemWithQuantity(it, cartItemQuantity),
+                cartItem = CartItem(it, cartItemQuantity),
             )
         }
     }
@@ -284,7 +287,7 @@ class CartRepositoryPostgres(
 
     private fun removeCartItemFromTotalInCents(
         cartId: CartId,
-        cartItemWithQuantity: CartItemWithQuantity,
+        cartItem: CartItem,
     ) {
         val cartSql =
             """
@@ -296,7 +299,7 @@ class CartRepositoryPostgres(
             """.trimIndent()
         jdbcTemplate.update(
             cartSql,
-            cartItemWithQuantity.totalInCents(),
+            cartItem.totalInCents(),
             cartId,
         )
     }

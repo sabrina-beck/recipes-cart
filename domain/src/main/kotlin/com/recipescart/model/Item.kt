@@ -1,6 +1,6 @@
 package com.recipescart.model
 
-sealed interface CartItem {
+sealed interface Item {
     val id: Int
 
     fun priceInCents(): Int
@@ -12,7 +12,7 @@ data class Product(
     override val id: ProductId,
     val name: String,
     val priceInCents: Int,
-) : CartItem {
+) : Item {
     override fun priceInCents(): Int = this.priceInCents
 }
 
@@ -22,7 +22,7 @@ data class Recipe(
     override val id: RecipeId,
     val name: String,
     val ingredients: List<Ingredient>,
-) : CartItem {
+) : Item {
     init {
         require(ingredients.isNotEmpty()) { "Recipe must have at least one ingredient" }
     }

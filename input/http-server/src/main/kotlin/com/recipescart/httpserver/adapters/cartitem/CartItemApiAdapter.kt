@@ -1,15 +1,15 @@
 package com.recipescart.httpserver.adapters.cartitem
 
-import com.recipescart.httpserver.api.cartitem.CartItemApi
 import com.recipescart.httpserver.api.cartitem.IngredientApi
+import com.recipescart.httpserver.api.cartitem.ItemApi
 import com.recipescart.httpserver.api.cartitem.ProductApi
 import com.recipescart.httpserver.api.cartitem.RecipeApi
-import com.recipescart.model.CartItem
 import com.recipescart.model.Ingredient
+import com.recipescart.model.Item
 import com.recipescart.model.Product
 import com.recipescart.model.Recipe
 
-fun CartItem.toApi(): CartItemApi =
+fun Item.toApi(): ItemApi =
     when (this) {
         is Product -> this.toApi()
         is Recipe -> this.toApi()

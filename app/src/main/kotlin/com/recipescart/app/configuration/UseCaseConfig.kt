@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class UseCaseConfig {
-
     @Bean
     fun getRecipesUseCase(recipeRepository: RecipeRepository): GetRecipesUseCase =
         GetRecipesUseCase(

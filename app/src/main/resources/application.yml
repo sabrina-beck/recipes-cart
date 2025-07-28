@@ -1,16 +1,12 @@
-spring:
-  aop:
-    proxy-target-class: false
-  datasource:
-    url: jdbc:postgresql://localhost:5432/recipes-cart
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 10
-  jackson:
-    serialization:
-      INDENT_OUTPUT: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics
+  endpoint:
+    health:
+      show-details: always
 
-server:
-  port: 8080
+spring:
+  profiles:
+    active: local

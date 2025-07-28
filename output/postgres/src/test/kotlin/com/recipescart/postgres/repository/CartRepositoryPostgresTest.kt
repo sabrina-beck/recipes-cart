@@ -2,7 +2,7 @@ package com.recipescart.postgres.repository
 
 import com.recipescart.fixtures.aRecipe
 import com.recipescart.model.Cart
-import com.recipescart.model.CartItemWithQuantity
+import com.recipescart.model.CartItem
 import com.recipescart.postgres.SharedPostgresContainer
 import com.recipescart.postgres.adapters.CartDbAdapter
 import com.recipescart.repository.CartRepository
@@ -76,7 +76,7 @@ class CartRepositoryPostgresTest {
         val expectedCart =
             Cart(
                 id = cart.id,
-                items = listOf(CartItemWithQuantity(recipe, quantity)),
+                items = listOf(CartItem(recipe, quantity)),
             )
         assertEquals(expectedCart, updatedCart)
     }
@@ -103,7 +103,7 @@ class CartRepositoryPostgresTest {
         val expectedCart =
             Cart(
                 id = cart.id,
-                items = listOf(CartItemWithQuantity(recipe, newQuantity)),
+                items = listOf(CartItem(recipe, newQuantity)),
             )
         assertEquals(expectedCart, updatedCart)
     }
@@ -156,7 +156,7 @@ class CartRepositoryPostgresTest {
             recipesSeed
                 .givenExistentRecipes()
                 .map {
-                    CartItemWithQuantity(item = it, quantity = Random.nextInt(1, 5))
+                    CartItem(item = it, quantity = Random.nextInt(1, 5))
                 }
         expectedCartItems.forEach {
             cartRepository.upsertRecipe(
@@ -245,7 +245,7 @@ class CartRepositoryPostgresTest {
             recipesSeed
                 .givenExistentRecipes()
                 .map {
-                    CartItemWithQuantity(item = it, quantity = Random.nextInt(1, 5))
+                    CartItem(item = it, quantity = Random.nextInt(1, 5))
                 }
         recipes.forEach {
             cartRepository.upsertRecipe(

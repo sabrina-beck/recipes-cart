@@ -1,5 +1,6 @@
 plugins {
     id("org.flywaydb.flyway") version "11.10.4"
+    `java-test-fixtures`
 }
 
 repositories {
@@ -14,8 +15,14 @@ dependencies {
     implementation("org.postgresql:postgresql:${property("postgresql.jdbc.version")}")
 
     testImplementation(testFixtures(project(":domain")))
-    testImplementation("org.testcontainers:testcontainers:${property("testcontainers.version")}")
-    testImplementation("org.testcontainers:postgresql:${property("testcontainers.version")}")
+
+    testFixturesImplementation(kotlin("test"))
+    testFixturesImplementation("org.jetbrains.kotlin:kotlin-reflect")
+    testFixturesImplementation("org.testcontainers:testcontainers:${property("testcontainers.version")}")
+    testFixturesImplementation("org.testcontainers:postgresql:${property("testcontainers.version")}")
+    testFixturesImplementation("org.flywaydb:flyway-core:${property("flyway.version")}")
+    testFixturesImplementation("org.flywaydb:flyway-database-postgresql:${property("flyway.version")}")
+    testFixturesImplementation("org.springframework.boot:spring-boot-starter-jdbc:${property("spring-boot.version")}")
 }
 
 buildscript {
