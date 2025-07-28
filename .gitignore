@@ -29,3 +29,6 @@ gen/
 # Ignore local configuration
 *.env
 .env.*
+
+# Allow gradle-wrapper.jar even though *.jar is ignored above
+!gradle/wrapper/gradle-wrapper.jar
