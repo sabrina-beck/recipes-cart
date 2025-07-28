@@ -15,3 +15,5 @@ rootProject.name = "recipes-cart"
 include("domain")
 
 include("output:postgres")
+
+include("input:http-server")

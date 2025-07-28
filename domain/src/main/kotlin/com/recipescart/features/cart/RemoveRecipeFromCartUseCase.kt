@@ -4,7 +4,7 @@ import com.recipescart.model.CartId
 import com.recipescart.model.RecipeId
 import com.recipescart.repository.CartRepository
 
-class RemoveRecipeUseCase(
+class RemoveRecipeFromCartUseCase(
     val cartRepository: CartRepository,
 ) {
     fun execute(

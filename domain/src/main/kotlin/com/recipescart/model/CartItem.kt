@@ -1,5 +1,21 @@
 package com.recipescart.model
 
+sealed interface CartItem {
+    val id: Int
+
+    fun priceInCents(): Int
+}
+
+typealias ProductId = Int
+
+data class Product(
+    override val id: ProductId,
+    val name: String,
+    val priceInCents: Int,
+) : CartItem {
+    override fun priceInCents(): Int = this.priceInCents
+}
+
 typealias RecipeId = Int
 
 data class Recipe(

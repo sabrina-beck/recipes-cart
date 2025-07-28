@@ -1,6 +1,4 @@
 # To Do
-- Use auto generated id for recipe and product
-- Http server module
 - App module
 - End to end test
 

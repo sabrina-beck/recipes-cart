@@ -15,9 +15,3 @@ data class CartItemWithQuantity(
 ) {
     fun totalInCents(): Int = this.item.priceInCents() * this.quantity
 }
-
-interface CartItem {
-    val id: Int
-
-    fun priceInCents(): Int
-}
