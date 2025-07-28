@@ -5,7 +5,8 @@
 ![PostgreSQL](https://img.shields.io/badge/postgreSQL-16-blue?logo=postgresql)
 ![Docker](https://img.shields.io/badge/docker-ready-blue?logo=docker)
 ![Build](https://img.shields.io/badge/build-gradle-success?logo=gradle)
-![CI](https://github.com/sabrinabeck/recipes-cart/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/sabrina-beck/recipes-cart/actions/workflows/ci.yml/badge.svg)
+[![codecov](https://codecov.io/github/sabrina-beck/recipes-cart/graph/badge.svg?token=KJ217NG3TN)](https://codecov.io/github/sabrina-beck/recipes-cart)
 
 
 This project extends a basic e-commerce platform to support the purchase of entire recipes. 
