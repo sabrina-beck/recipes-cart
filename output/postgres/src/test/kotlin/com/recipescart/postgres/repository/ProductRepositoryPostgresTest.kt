@@ -4,7 +4,7 @@ import com.recipescart.fixtures.aProduct
 import com.recipescart.postgres.SharedPostgresContainer
 import com.recipescart.repository.InsertProductResult
 import com.recipescart.repository.ProductRepository
-import com.recipescart.seed.givenProducts
+import com.recipescart.seed.ProductsSeed
 import com.zaxxer.hikari.HikariDataSource
 import org.springframework.jdbc.core.JdbcTemplate
 import kotlin.test.AfterTest
@@ -16,6 +16,7 @@ import kotlin.test.assertNull
 class ProductRepositoryPostgresTest {
     private lateinit var dataSource: HikariDataSource
     private lateinit var repository: ProductRepository
+    private lateinit var productsSeed: ProductsSeed
 
     @BeforeTest
     fun setup() {
@@ -23,6 +24,7 @@ class ProductRepositoryPostgresTest {
 
         val jdbc = JdbcTemplate(this.dataSource)
         this.repository = ProductRepositoryPostgres(jdbc)
+        this.productsSeed = ProductsSeed(this.repository)
     }
 
     @AfterTest
@@ -90,7 +92,7 @@ class ProductRepositoryPostgresTest {
 
     @Test
     fun `getProductsByIds should return products from db`() {
-        val expectedProducts = givenProducts(repository)
+        val expectedProducts = productsSeed.givenProducts()
 
         val productIds = expectedProducts.map { it.id }
         val products = repository.getProductsByIds(productIds)

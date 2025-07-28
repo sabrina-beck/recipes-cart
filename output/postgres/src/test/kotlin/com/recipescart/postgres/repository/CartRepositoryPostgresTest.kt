@@ -10,8 +10,7 @@ import com.recipescart.repository.ProductRepository
 import com.recipescart.repository.RecipeRepository
 import com.recipescart.repository.UpsertItemInCart
 import com.recipescart.repository.UpsertItemInCartResult
-import com.recipescart.seed.givenExistentRecipe
-import com.recipescart.seed.givenExistentRecipes
+import com.recipescart.seed.RecipesSeed
 import com.zaxxer.hikari.HikariDataSource
 import org.springframework.jdbc.core.JdbcTemplate
 import kotlin.random.Random
@@ -23,9 +22,12 @@ import kotlin.test.assertNull
 
 class CartRepositoryPostgresTest {
     private lateinit var dataSource: HikariDataSource
+
     private lateinit var productRepository: ProductRepository
     private lateinit var recipeRepository: RecipeRepository
     private lateinit var cartRepository: CartRepository
+
+    private lateinit var recipesSeed: RecipesSeed
 
     @BeforeTest
     fun setup() {
@@ -40,6 +42,8 @@ class CartRepositoryPostgresTest {
                 CartDbAdapter(productRepository, recipeRepository),
                 this.recipeRepository,
             )
+
+        this.recipesSeed = RecipesSeed(this.productRepository, this.recipeRepository)
     }
 
     @AfterTest
@@ -58,7 +62,7 @@ class CartRepositoryPostgresTest {
     @Test
     fun `upsertRecipe new recipe should add recipe to cart`() {
         val quantity = 2
-        val recipe = givenExistentRecipe(recipeRepository, productRepository, 1)
+        val recipe = recipesSeed.givenExistentRecipe(recipeId = 1)
         val cart = cartRepository.newCart()
 
         val result =
@@ -80,7 +84,7 @@ class CartRepositoryPostgresTest {
     @Test
     fun `upsertRecipe same recipe should update recipe on cart`() {
         val initialQuantity = 2
-        val recipe = givenExistentRecipe(recipeRepository, productRepository, 1)
+        val recipe = recipesSeed.givenExistentRecipe(recipeId = 1)
         val cart = cartRepository.newCart()
 
         cartRepository.upsertRecipe(
@@ -107,7 +111,7 @@ class CartRepositoryPostgresTest {
     @Test
     fun `upsertRecipe on inexistent cart should return cart not found`() {
         val quantity = 2
-        val recipe = givenExistentRecipe(recipeRepository, productRepository, 1)
+        val recipe = recipesSeed.givenExistentRecipe(recipeId = 1)
         val cartId = 1
 
         val result =
@@ -149,7 +153,8 @@ class CartRepositoryPostgresTest {
         val emptyCart = cartRepository.newCart()
 
         val expectedCartItems =
-            givenExistentRecipes(recipeRepository, productRepository)
+            recipesSeed
+                .givenExistentRecipes()
                 .map {
                     CartItemWithQuantity(item = it, quantity = Random.nextInt(1, 5))
                 }
@@ -199,7 +204,7 @@ class CartRepositoryPostgresTest {
 
     @Test
     fun `removeRecipe with recipe not in cart should do nothing`() {
-        val recipe = givenExistentRecipe(recipeRepository, productRepository, 1)
+        val recipe = recipesSeed.givenExistentRecipe(recipeId = 1)
         val cart = cartRepository.newCart()
 
         cartRepository.removeRecipe(
@@ -215,7 +220,7 @@ class CartRepositoryPostgresTest {
     fun `removeRecipe only recipe in cart should remove recipe`() {
         val cart = cartRepository.newCart()
 
-        val recipe = givenExistentRecipe(recipeRepository, productRepository, 1)
+        val recipe = recipesSeed.givenExistentRecipe(recipeId = 1)
 
         val upsertItemInCartResult =
             cartRepository.upsertRecipe(
@@ -237,7 +242,8 @@ class CartRepositoryPostgresTest {
         val cart = cartRepository.newCart()
 
         val recipes =
-            givenExistentRecipes(recipeRepository, productRepository)
+            recipesSeed
+                .givenExistentRecipes()
                 .map {
                     CartItemWithQuantity(item = it, quantity = Random.nextInt(1, 5))
                 }

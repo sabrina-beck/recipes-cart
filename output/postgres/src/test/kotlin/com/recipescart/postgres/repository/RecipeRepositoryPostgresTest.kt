@@ -3,10 +3,8 @@ package com.recipescart.postgres.repository
 import com.recipescart.fixtures.aRecipe
 import com.recipescart.postgres.SharedPostgresContainer
 import com.recipescart.repository.InsertRecipeResult
-import com.recipescart.repository.ProductRepository
 import com.recipescart.repository.RecipeRepository
-import com.recipescart.seed.givenExistentRecipe
-import com.recipescart.seed.givenExistentRecipes
+import com.recipescart.seed.RecipesSeed
 import com.zaxxer.hikari.HikariDataSource
 import org.springframework.jdbc.core.JdbcTemplate
 import kotlin.test.AfterTest
@@ -17,8 +15,10 @@ import kotlin.test.assertNull
 
 class RecipeRepositoryPostgresTest {
     private lateinit var dataSource: HikariDataSource
-    private lateinit var productRepository: ProductRepository
+
     private lateinit var recipeRepository: RecipeRepository
+
+    private lateinit var recipesSeed: RecipesSeed
 
     @BeforeTest
     fun setup() {
@@ -26,7 +26,9 @@ class RecipeRepositoryPostgresTest {
 
         val jdbc = JdbcTemplate(this.dataSource)
         this.recipeRepository = RecipeRepositoryPostgres(jdbc)
-        this.productRepository = ProductRepositoryPostgres(jdbc)
+        val productRepository = ProductRepositoryPostgres(jdbc)
+
+        this.recipesSeed = RecipesSeed(productRepository, this.recipeRepository)
     }
 
     @AfterTest
@@ -37,7 +39,7 @@ class RecipeRepositoryPostgresTest {
     @Test
     fun `insertRecipe should return inserted new recipe on database`() {
         val recipeId = 1
-        val expectedRecipe = givenExistentRecipe(recipeRepository, productRepository, recipeId)
+        val expectedRecipe = recipesSeed.givenExistentRecipe(recipeId)
 
         val recipe = recipeRepository.getRecipeById(recipeId)
         assertEquals(expectedRecipe, recipe)
@@ -46,7 +48,7 @@ class RecipeRepositoryPostgresTest {
     @Test
     fun `insertRecipe twice should be idempotent`() {
         val recipeId = 1
-        val expectedRecipe = givenExistentRecipe(recipeRepository, productRepository, recipeId)
+        val expectedRecipe = recipesSeed.givenExistentRecipe(recipeId)
 
         val result = recipeRepository.insertRecipe(expectedRecipe)
         assertEquals(InsertRecipeResult.Success, result)
@@ -58,7 +60,7 @@ class RecipeRepositoryPostgresTest {
     @Test
     fun `insertRecipe twice with same id but different recipe should return conflict`() {
         val recipeId = 1
-        val expectedRecipe = givenExistentRecipe(recipeRepository, productRepository, recipeId)
+        val expectedRecipe = recipesSeed.givenExistentRecipe(recipeId)
 
         val anotherRecipe = aRecipe(recipeId)
         val result = recipeRepository.insertRecipe(anotherRecipe)
@@ -84,7 +86,7 @@ class RecipeRepositoryPostgresTest {
 
     @Test
     fun `getRecipes should return recipes from db`() {
-        val expectedRecipes = givenExistentRecipes(recipeRepository, productRepository)
+        val expectedRecipes = recipesSeed.givenExistentRecipes()
 
         val recipes = recipeRepository.getRecipes()
         assertEquals(expectedRecipes, recipes)
@@ -104,7 +106,7 @@ class RecipeRepositoryPostgresTest {
 
     @Test
     fun `getRecipesByIds should return recipes from db`() {
-        val expectedRecipes = givenExistentRecipes(recipeRepository, productRepository)
+        val expectedRecipes = recipesSeed.givenExistentRecipes()
 
         val recipeIds = expectedRecipes.map { it.id }
         val recipes = recipeRepository.getRecipesByIds(recipeIds)

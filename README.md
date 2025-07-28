@@ -1,6 +1,8 @@
-# Tech Debt to look before delivery
-- Repositories on fixture seeds
+# To Do
 - Domain unit tests
+- Http server module
+- App module
+- End to end test
 
 # Decision-making process
 ## Idempotency

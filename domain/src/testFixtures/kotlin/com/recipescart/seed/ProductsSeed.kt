@@ -6,10 +6,14 @@ import com.recipescart.repository.ProductRepository
 import kotlin.random.Random
 import kotlin.random.nextInt
 
-fun givenProducts(productRepository: ProductRepository): List<Product> =
-    (0..Random.nextInt(2..20))
-        .map { aProduct(it) }
-        .map {
-            productRepository.insertProduct(it)
-            it
-        }
+class ProductsSeed(
+    private val productRepository: ProductRepository,
+) {
+    fun givenProducts(): List<Product> =
+        (0..Random.nextInt(2..20))
+            .map { aProduct(it) }
+            .map {
+                productRepository.insertProduct(it)
+                it
+            }
+}
