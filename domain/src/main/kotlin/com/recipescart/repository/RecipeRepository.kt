@@ -20,4 +20,6 @@ interface RecipeRepository {
     fun getRecipeById(id: RecipeId): Recipe?
 
     fun insertRecipe(recipe: Recipe): InsertRecipeResult
+
+    fun getRecipesByIds(ids: List<RecipeId>): List<Recipe>
 }

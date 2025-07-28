@@ -4,24 +4,29 @@ import com.recipescart.model.Cart
 import com.recipescart.model.CartId
 import com.recipescart.model.RecipeId
 
+sealed interface UpsertItemInCartResult {
+    object Success : UpsertItemInCartResult
+
+    object ItemNotFound : UpsertItemInCartResult
+
+    object CartNotFound : UpsertItemInCartResult
+}
+
+data class UpsertItemInCart(
+    val cartId: CartId,
+    val itemId: RecipeId,
+    val quantity: Int,
+)
+
 interface CartRepository {
-    fun getCartById(id: CartId): Cart
+    fun getCartById(id: CartId): Cart?
 
-    sealed interface UpsertRecipeResult {
-        object Success : UpsertRecipeResult
-
-        object RecipeNotFound : UpsertRecipeResult
-
-        object CartNotFound : UpsertRecipeResult
-    }
-
-    fun upsertRecipe(
-        id: CartId,
-        recipe: RecipeId,
-    ): UpsertRecipeResult
+    fun upsertRecipe(input: UpsertItemInCart): UpsertItemInCartResult
 
     fun removeRecipe(
-        id: CartId,
-        recipe: RecipeId,
+        cartId: CartId,
+        recipeId: RecipeId,
     )
+
+    fun newCart(): Cart
 }

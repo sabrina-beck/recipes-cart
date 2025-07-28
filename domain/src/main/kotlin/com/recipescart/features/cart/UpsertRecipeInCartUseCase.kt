@@ -1,23 +1,11 @@
 package com.recipescart.features.cart
 
-import com.recipescart.adapters.cart.toAddRecipeUseCaseResult
-import com.recipescart.model.CartId
-import com.recipescart.model.RecipeId
 import com.recipescart.repository.CartRepository
-
-sealed class UpsertRecipeInCartUseCaseResult {
-    object Success : UpsertRecipeInCartUseCaseResult()
-
-    object RecipeInCartNotFound : UpsertRecipeInCartUseCaseResult()
-
-    object CartNotFound : UpsertRecipeInCartUseCaseResult()
-}
+import com.recipescart.repository.UpsertItemInCart
+import com.recipescart.repository.UpsertItemInCartResult
 
 class UpsertRecipeInCartUseCase(
     val cartRepository: CartRepository,
 ) {
-    fun execute(
-        cartId: CartId,
-        recipeId: RecipeId,
-    ): UpsertRecipeInCartUseCaseResult = cartRepository.upsertRecipe(cartId, recipeId).toAddRecipeUseCaseResult()
+    fun execute(input: UpsertItemInCart): UpsertItemInCartResult = cartRepository.upsertRecipe(input)
 }

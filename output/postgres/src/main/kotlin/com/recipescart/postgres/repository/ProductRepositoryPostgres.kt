@@ -8,9 +8,10 @@ import com.recipescart.repository.ProductRepository
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 
 class ProductRepositoryPostgres(
-    val jdbcTemplate: JdbcTemplate,
+    private val jdbcTemplate: JdbcTemplate,
 ) : ProductRepository {
     companion object {
         const val PRODUCTS_TABLE_NAME = "products"
@@ -42,7 +43,7 @@ class ProductRepositoryPostgres(
                 product.priceInCents,
             )
             InsertProductResult.Success
-        } catch (ex: DuplicateKeyException) {
+        } catch (_: DuplicateKeyException) {
             val existing = getProductById(product.id)
             if (existing == product) {
                 InsertProductResult.Success
@@ -65,8 +66,26 @@ class ProductRepositoryPostgres(
 
         return try {
             jdbcTemplate.queryForObject(sql, productRowMapper, id)
-        } catch (ex: EmptyResultDataAccessException) {
+        } catch (_: EmptyResultDataAccessException) {
             null
         }
+    }
+
+    override fun getProductsByIds(ids: List<ProductId>): List<Product> {
+        if (ids.isEmpty()) return emptyList()
+
+        val sql =
+            """
+            SELECT
+                $ID_COLUMN, 
+                $NAME_COLUMN, 
+                $PRICE_IN_CENTS_COLUMN
+            FROM $PRODUCTS_TABLE_NAME
+            WHERE $ID_COLUMN IN (:ids)
+            """.trimMargin()
+
+        val namedJdbc = NamedParameterJdbcTemplate(jdbcTemplate)
+        return namedJdbc
+            .query(sql, mapOf("ids" to ids), productRowMapper)
     }
 }

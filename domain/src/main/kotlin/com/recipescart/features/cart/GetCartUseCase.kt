@@ -7,5 +7,5 @@ import com.recipescart.repository.CartRepository
 class GetCartUseCase(
     val cartRepository: CartRepository,
 ) {
-    fun execute(cartId: CartId): Cart = cartRepository.getCartById(cartId)
+    fun execute(cartId: CartId): Cart? = cartRepository.getCartById(cartId)
 }

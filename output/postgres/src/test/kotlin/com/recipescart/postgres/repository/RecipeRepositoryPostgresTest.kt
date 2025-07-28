@@ -7,21 +7,31 @@ import com.recipescart.repository.ProductRepository
 import com.recipescart.repository.RecipeRepository
 import com.recipescart.seed.givenExistentRecipe
 import com.recipescart.seed.givenExistentRecipes
+import com.zaxxer.hikari.HikariDataSource
 import org.springframework.jdbc.core.JdbcTemplate
+import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class RecipeRepositoryPostgresTest {
+    private lateinit var dataSource: HikariDataSource
     private lateinit var productRepository: ProductRepository
     private lateinit var recipeRepository: RecipeRepository
 
     @BeforeTest
     fun setup() {
-        val jdbc = JdbcTemplate(SharedPostgresContainer.newCartRecipesDb())
+        this.dataSource = SharedPostgresContainer.newCartRecipesDb()
+
+        val jdbc = JdbcTemplate(this.dataSource)
         this.recipeRepository = RecipeRepositoryPostgres(jdbc)
         this.productRepository = ProductRepositoryPostgres(jdbc)
+    }
+
+    @AfterTest
+    fun tearDown() {
+        dataSource.close()
     }
 
     @Test
@@ -77,6 +87,27 @@ class RecipeRepositoryPostgresTest {
         val expectedRecipes = givenExistentRecipes(recipeRepository, productRepository)
 
         val recipes = recipeRepository.getRecipes()
+        assertEquals(expectedRecipes, recipes)
+    }
+
+    @Test
+    fun `getRecipesByIds when there's no recipe id should return empty`() {
+        val recipes = recipeRepository.getRecipesByIds(emptyList())
+        assert(recipes.isEmpty())
+    }
+
+    @Test
+    fun `getRecipesByIds when there's no recipe should return empty`() {
+        val recipes = recipeRepository.getRecipesByIds(listOf(1, 2, 3))
+        assert(recipes.isEmpty())
+    }
+
+    @Test
+    fun `getRecipesByIds should return recipes from db`() {
+        val expectedRecipes = givenExistentRecipes(recipeRepository, productRepository)
+
+        val recipeIds = expectedRecipes.map { it.id }
+        val recipes = recipeRepository.getRecipesByIds(recipeIds)
         assertEquals(expectedRecipes, recipes)
     }
 }

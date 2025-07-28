@@ -12,5 +12,7 @@ sealed interface InsertProductResult {
 interface ProductRepository {
     fun getProductById(id: ProductId): Product?
 
+    fun getProductsByIds(ids: List<ProductId>): List<Product>
+
     fun insertProduct(product: Product): InsertProductResult
 }

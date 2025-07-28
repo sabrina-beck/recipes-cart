@@ -1,3 +1,7 @@
+# Tech Debt to look before delivery
+- Repositories on fixture seeds
+- Repositories on cart adapters
+
 # Decision-making process
 ## Idempotency
 This API is designed to be idempotent where applicable, ensuring safe and predictable behavior even in the case of 

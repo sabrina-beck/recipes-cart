@@ -4,19 +4,30 @@ import com.recipescart.fixtures.aProduct
 import com.recipescart.postgres.SharedPostgresContainer
 import com.recipescart.repository.InsertProductResult
 import com.recipescart.repository.ProductRepository
+import com.recipescart.seed.givenProducts
+import com.zaxxer.hikari.HikariDataSource
 import org.springframework.jdbc.core.JdbcTemplate
+import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class ProductRepositoryPostgresTest {
+    private lateinit var dataSource: HikariDataSource
     private lateinit var repository: ProductRepository
 
     @BeforeTest
     fun setup() {
-        val jdbc = JdbcTemplate(SharedPostgresContainer.newCartRecipesDb())
+        this.dataSource = SharedPostgresContainer.newCartRecipesDb()
+
+        val jdbc = JdbcTemplate(this.dataSource)
         this.repository = ProductRepositoryPostgres(jdbc)
+    }
+
+    @AfterTest
+    fun tearDown() {
+        dataSource.close()
     }
 
     @Test
@@ -63,5 +74,26 @@ class ProductRepositoryPostgresTest {
 
         val product = repository.getProductById(id)
         assertNull(product)
+    }
+
+    @Test
+    fun `getProductsByIds when there's no product id should return empty`() {
+        val products = repository.getProductsByIds(emptyList())
+        assert(products.isEmpty())
+    }
+
+    @Test
+    fun `getProductsByIds when there's no product should return empty`() {
+        val products = repository.getProductsByIds(listOf(1, 2, 3))
+        assert(products.isEmpty())
+    }
+
+    @Test
+    fun `getProductsByIds should return products from db`() {
+        val expectedProducts = givenProducts(repository)
+
+        val productIds = expectedProducts.map { it.id }
+        val products = repository.getProductsByIds(productIds)
+        assertEquals(expectedProducts, products)
     }
 }

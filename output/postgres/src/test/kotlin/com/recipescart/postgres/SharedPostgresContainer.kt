@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.flywaydb.core.Flyway
 import org.testcontainers.containers.PostgreSQLContainer
+import java.sql.DriverManager
 import java.util.UUID
 
 object SharedPostgresContainer {
@@ -20,11 +21,17 @@ object SharedPostgresContainer {
     val password: String get() = container.password
 
     fun newCartRecipesDb(): HikariDataSource {
+        check(container.isRunning) { "Postgres test container is not running" }
+
         val dbName = "test_${UUID.randomUUID().toString().replace("-", "")}"
 
-        container.createConnection("").use { conn ->
-            conn.createStatement().execute("CREATE DATABASE $dbName")
-        }
+        val adminJdbcUrl = "jdbc:postgresql://${container.host}:${container.getMappedPort(5432)}/postgres"
+
+        DriverManager
+            .getConnection(adminJdbcUrl, container.username, container.password)
+            .use { conn ->
+                conn.createStatement().execute("CREATE DATABASE $dbName")
+            }
 
         val config =
             HikariConfig().apply {

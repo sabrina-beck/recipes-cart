@@ -9,6 +9,7 @@ import com.recipescart.repository.InsertRecipeResult
 import com.recipescart.repository.RecipeRepository
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.transaction.annotation.Transactional
 
 class RecipeRepositoryPostgres(
@@ -73,6 +74,32 @@ class RecipeRepositoryPostgres(
             .firstOrNull()
     }
 
+    override fun getRecipesByIds(ids: List<RecipeId>): List<Recipe> {
+        if (ids.isEmpty()) return emptyList()
+
+        val sql =
+            """
+            SELECT 
+                r.$ID_COLUMN AS $RECIPE_ID_COLUMN, 
+                r.$NAME_COLUMN AS $NAME_COLUMN,
+                ri.$PRODUCT_ID_COLUMN,
+                p.${ProductRepositoryPostgres.NAME_COLUMN} AS $PRODUCT_NAME_COLUMN,
+                p.${ProductRepositoryPostgres.PRICE_IN_CENTS_COLUMN} ,
+                ri.$QUANTITY_COLUMN
+            FROM $RECIPES_TABLE_NAME r
+            JOIN $RECIPE_INGREDIENTS_TABLE_NAME ri ON ri.$RECIPE_ID_COLUMN = r.$ID_COLUMN
+            JOIN ${ProductRepositoryPostgres.PRODUCTS_TABLE_NAME} p ON p.${ProductRepositoryPostgres.ID_COLUMN} = ri.$PRODUCT_ID_COLUMN
+            WHERE r.$ID_COLUMN IN (:ids)
+            ORDER BY r.$ID_COLUMN
+            """.trimIndent()
+
+        val namedJdbc = NamedParameterJdbcTemplate(jdbcTemplate)
+        return namedJdbc
+            .queryForList(sql, mapOf("ids" to ids))
+            .groupBy { it.toRecipeDb() }
+            .toRecipes()
+    }
+
     @Transactional
     override fun insertRecipe(recipe: Recipe): InsertRecipeResult {
         val sql =
@@ -91,12 +118,12 @@ class RecipeRepositoryPostgres(
                 recipe.id,
                 recipe.name,
             )
-        } catch (ex: DuplicateKeyException) {
+        } catch (_: DuplicateKeyException) {
             val existing = getRecipeById(recipe.id)
-            if (existing == recipe) {
-                return InsertRecipeResult.Success
+            return if (existing == recipe) {
+                InsertRecipeResult.Success
             } else {
-                return InsertRecipeResult.Conflict
+                InsertRecipeResult.Conflict
             }
         }
 

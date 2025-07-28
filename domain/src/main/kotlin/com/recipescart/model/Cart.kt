@@ -4,8 +4,20 @@ typealias CartId = Int
 
 data class Cart(
     val id: CartId,
-    val totalInCents: Int,
-    val items: List<CartItem>,
-)
+    val items: List<CartItemWithQuantity> = emptyList(),
+) {
+    val totalInCents: Int = items.sumOf { it.item.priceInCents() * it.quantity }
+}
 
-interface CartItem
+data class CartItemWithQuantity(
+    val item: CartItem,
+    val quantity: Int,
+) {
+    fun totalInCents(): Int = this.item.priceInCents() * this.quantity
+}
+
+interface CartItem {
+    val id: Int
+
+    fun priceInCents(): Int
+}

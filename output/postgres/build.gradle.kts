@@ -11,11 +11,11 @@ dependencies {
     implementation("org.flywaydb:flyway-core:${property("flyway.version")}")
     implementation("org.flywaydb:flyway-database-postgresql:${property("flyway.version")}")
     implementation("org.springframework.boot:spring-boot-starter-jdbc:${property("springBoot.version")}")
+    implementation("org.postgresql:postgresql:${property("postgresql.jdbc.version")}")
 
     testImplementation(testFixtures(project(":domain")))
     testImplementation("org.testcontainers:testcontainers:${property("testcontainers.version")}")
     testImplementation("org.testcontainers:postgresql:${property("testcontainers.version")}")
-    testImplementation("org.postgresql:postgresql:${property("postgresql.jdbc.version")}")
 }
 
 buildscript {
