@@ -32,3 +32,6 @@ gen/
 
 # Allow gradle-wrapper.jar even though *.jar is ignored above
 !gradle/wrapper/gradle-wrapper.jar
+
+.kotlin
+.kotlin/*
