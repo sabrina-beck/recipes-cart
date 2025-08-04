@@ -13,7 +13,10 @@ services:
       - postgres-data:/var/lib/postgresql/data
 
   migrator:
-    image: flyway/flyway:9.22
+    build:
+      context: .
+      dockerfile: Dockerfile.migrator
+    user: root
     depends_on:
       - db
     volumes:
@@ -23,10 +26,12 @@ services:
       sh -c "
         echo '⏳ Waiting for database...';
         until pg_isready -h db -U postgres > /dev/null 2>&1; do sleep 1; done;
+  
         echo '✅ Running Flyway migration...';
-        flyway -url=jdbc:postgresql://db:5432/recipescart -user=postgres -password=postgres migrate;
+        flyway -url=jdbc:postgresql://db:5432/recipes-cart -user=postgres -password=postgres migrate;
+  
         echo '🌱 Seeding database...';
-        psql -h db -U postgres -d recipescart -f /seed/local_seed.sql;
+        PGPASSWORD=postgres psql -h db -U postgres -d recipes-cart -f /seed/local_seed.sql;
       "
 
   app:
