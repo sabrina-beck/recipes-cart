@@ -18,4 +18,21 @@ data class CartItem(
     }
 
     fun totalInCents(): Int = this.item.priceInCents() * this.quantity
+
+    fun type(): CartItemType =
+        when (this.item) {
+            is Recipe -> CartItemType.RECIPE
+            is Product -> CartItemType.PRODUCT
+        }
 }
+
+enum class CartItemType {
+    PRODUCT,
+    RECIPE,
+}
+
+data class CartItemId(
+    val cartId: CartId,
+    val itemId: Int,
+    val cartItemType: CartItemType,
+)

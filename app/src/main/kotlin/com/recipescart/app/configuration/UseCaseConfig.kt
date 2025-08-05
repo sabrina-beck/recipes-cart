@@ -7,6 +7,7 @@ import com.recipescart.features.cart.UpsertRecipeInCartUseCase
 import com.recipescart.features.recipe.GetRecipesUseCase
 import com.recipescart.repository.CartRepository
 import com.recipescart.repository.RecipeRepository
+import com.recipescart.repository.TransactionRepository
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -31,14 +32,26 @@ class UseCaseConfig {
         )
 
     @Bean
-    fun upsertRecipeInCartUseCase(cartRepository: CartRepository): UpsertRecipeInCartUseCase =
+    fun upsertRecipeInCartUseCase(
+        transactionRepository: TransactionRepository,
+        recipeRepository: RecipeRepository,
+        cartRepository: CartRepository,
+    ): UpsertRecipeInCartUseCase =
         UpsertRecipeInCartUseCase(
-            cartRepository,
+            transactionRepository = transactionRepository,
+            recipeRepository = recipeRepository,
+            cartRepository = cartRepository,
         )
 
     @Bean
-    fun removeRecipeFromCartUseCase(cartRepository: CartRepository): RemoveRecipeFromCartUseCase =
+    fun removeRecipeFromCartUseCase(
+        transactionRepository: TransactionRepository,
+        recipeRepository: RecipeRepository,
+        cartRepository: CartRepository,
+    ): RemoveRecipeFromCartUseCase =
         RemoveRecipeFromCartUseCase(
-            cartRepository,
+            transactionRepository = transactionRepository,
+            recipeRepository = recipeRepository,
+            cartRepository = cartRepository,
         )
 }

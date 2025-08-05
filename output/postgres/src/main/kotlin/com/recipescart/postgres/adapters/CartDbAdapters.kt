@@ -2,9 +2,9 @@ package com.recipescart.postgres.adapters
 
 import com.recipescart.model.Cart
 import com.recipescart.model.CartItem
+import com.recipescart.model.CartItemType
 import com.recipescart.model.Product
 import com.recipescart.model.Recipe
-import com.recipescart.postgres.repository.CartItemType
 import com.recipescart.postgres.repository.CartRepositoryPostgres.Companion.ID_COLUMN
 import com.recipescart.postgres.repository.CartRepositoryPostgres.Companion.ITEM_ID_COLUMN
 import com.recipescart.postgres.repository.CartRepositoryPostgres.Companion.ITEM_TYPE_COLUMN
@@ -22,11 +22,17 @@ fun Map<String, Any>.toCart(items: List<CartItem>): Cart {
 
     val totalInCentsFromDb = this[TOTAL_IN_CENTS_COLUMN] as Int
     require(cart.totalInCents == totalInCentsFromDb) {
-        "Mismatched total: DB says $totalInCentsFromDb, computed ${cart.totalInCents}"
+        "Mismatched total in cents: DB says $totalInCentsFromDb, computed ${cart.totalInCents}"
     }
 
     return cart
 }
+
+fun CartItemType.toValue() =
+    when (this) {
+        CartItemType.RECIPE -> "recipe"
+        CartItemType.PRODUCT -> "product"
+    }
 
 class CartDbAdapter(
     private val productRepository: ProductRepository,
@@ -46,8 +52,8 @@ class CartDbAdapter(
         return this.mapNotNull { row ->
             val itemId = row[ITEM_ID_COLUMN] as Int
             when (row[ITEM_TYPE_COLUMN]) {
-                CartItemType.RECIPE.value -> recipesById[itemId]
-                CartItemType.PRODUCT.value -> productsById[itemId]
+                CartItemType.RECIPE.toValue() -> recipesById[itemId]
+                CartItemType.PRODUCT.toValue() -> productsById[itemId]
                 else -> null
             }?.let {
                 CartItem(item = it, quantity = row[QUANTITY_COLUMN] as Int)
@@ -57,13 +63,13 @@ class CartDbAdapter(
 
     fun List<Map<String, Any>>.toRecipes(): List<Recipe> =
         this
-            .filter { it[ITEM_TYPE_COLUMN] == CartItemType.RECIPE.value }
+            .filter { it[ITEM_TYPE_COLUMN] == CartItemType.RECIPE.toValue() }
             .map { it[ITEM_ID_COLUMN] as Int }
             .let { recipeRepository.getRecipesByIds(it) }
 
     fun List<Map<String, Any>>.toProducts(): List<Product> =
         this
-            .filter { it[ITEM_TYPE_COLUMN] == CartItemType.PRODUCT.value }
+            .filter { it[ITEM_TYPE_COLUMN] == CartItemType.PRODUCT.toValue() }
             .map { it[ITEM_ID_COLUMN] as Int }
             .let { productRepository.getProductsByIds(it) }
 }

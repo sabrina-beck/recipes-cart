@@ -3,37 +3,20 @@ package com.recipescart.postgres.repository
 import com.recipescart.model.Cart
 import com.recipescart.model.CartId
 import com.recipescart.model.CartItem
-import com.recipescart.model.Item
-import com.recipescart.model.RecipeId
+import com.recipescart.model.CartItemId
 import com.recipescart.postgres.adapters.CartDbAdapter
 import com.recipescart.postgres.adapters.toCart
+import com.recipescart.postgres.adapters.toValue
 import com.recipescart.postgres.utils.isForeignKeyViolation
 import com.recipescart.repository.CartRepository
-import com.recipescart.repository.RecipeRepository
-import com.recipescart.repository.UpsertItemInCart
 import com.recipescart.repository.UpsertItemInCartResult
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.transaction.annotation.Transactional
-
-enum class CartItemType(
-    val value: String,
-) {
-    PRODUCT("product"),
-    RECIPE("recipe"),
-}
-
-data class CartItemId(
-    val cartId: CartId,
-    val itemId: Int,
-    val itemType: CartItemType,
-)
 
 class CartRepositoryPostgres(
     private val jdbcTemplate: JdbcTemplate,
     private val cartDbAdapter: CartDbAdapter,
-    private val recipeRepository: RecipeRepository,
 ) : CartRepository {
     companion object {
         const val CARTS_TABLE_NAME = "carts"
@@ -87,39 +70,6 @@ class CartRepositoryPostgres(
         return cartRow.toCart(items)
     }
 
-    @Transactional
-    override fun upsertRecipe(input: UpsertItemInCart): UpsertItemInCartResult {
-        val recipe =
-            recipeRepository.getRecipeById(input.itemId)
-                ?: return UpsertItemInCartResult.ItemNotFound
-
-        val newCartItem =
-            CartItem(
-                item = recipe,
-                quantity = input.quantity,
-            )
-        return upsertCartItem(
-            input.cartId,
-            CartItemType.RECIPE,
-            newCartItem,
-        )
-    }
-
-    @Transactional
-    override fun removeRecipe(
-        cartId: CartId,
-        recipeId: RecipeId,
-    ) {
-        val cartItemId =
-            CartItemId(
-                cartId = cartId,
-                itemId = recipeId,
-                itemType = CartItemType.RECIPE,
-            )
-        val recipe = recipeRepository.getRecipeById(recipeId)
-        removeCartItem(cartItemId = cartItemId, item = recipe)
-    }
-
     override fun newCart(): Cart {
         val sql =
             """
@@ -138,39 +88,7 @@ class CartRepositoryPostgres(
         return Cart(id = cartId)
     }
 
-    private fun upsertCartItem(
-        cartId: CartId,
-        itemType: CartItemType,
-        cartItem: CartItem,
-    ): UpsertItemInCartResult {
-        val previousRecipeCartItem =
-            getCartItemQuantity(
-                CartItemId(cartId = cartId, itemId = cartItem.item.id, itemType = itemType),
-            )?.let {
-                CartItem(
-                    item = cartItem.item,
-                    quantity = it,
-                )
-            }
-
-        val upsertCartItemResult =
-            upsertCartItemOnly(
-                cartId = cartId,
-                itemType = CartItemType.RECIPE,
-                cartItem = cartItem,
-            )
-        if (upsertCartItemResult != UpsertItemInCartResult.Success) return upsertCartItemResult
-
-        updateCartTotalInCents(
-            cartId = cartId,
-            previousCartItem = previousRecipeCartItem,
-            newCartItem = cartItem,
-        )
-
-        return UpsertItemInCartResult.Success
-    }
-
-    private fun getCartItemQuantity(cartItemId: CartItemId): Int? {
+    override fun getCartItemQuantity(cartItemId: CartItemId): Int? {
         val sql =
             """
             SELECT
@@ -178,7 +96,7 @@ class CartRepositoryPostgres(
             FROM $CART_ITEMS_TABLE_NAME
             WHERE $CART_ID_COLUMN = ?
                   AND $ITEM_ID_COLUMN = ?
-                  AND $ITEM_TYPE_COLUMN = '${cartItemId.itemType.value}'
+                  AND $ITEM_TYPE_COLUMN = '${cartItemId.cartItemType.toValue()}'
             """.trimIndent()
 
         return try {
@@ -193,9 +111,8 @@ class CartRepositoryPostgres(
         }
     }
 
-    private fun upsertCartItemOnly(
+    override fun upsertCartItem(
         cartId: CartId,
-        itemType: CartItemType,
         cartItem: CartItem,
     ): UpsertItemInCartResult {
         val cartItemsSql =
@@ -208,7 +125,7 @@ class CartRepositoryPostgres(
                 $CREATED_AT_COLUMN, 
                 $UPDATED_AT_COLUMN
             )
-            VALUES (?, ?, '${itemType.value}', ?, now(), now())
+            VALUES (?, ?, '${cartItem.type().toValue()}', ?, now(), now())
             ON CONFLICT ($CART_ID_COLUMN, $ITEM_ID_COLUMN, $ITEM_TYPE_COLUMN) DO UPDATE 
             SET $QUANTITY_COLUMN = ?,
                 $UPDATED_AT_COLUMN = now()
@@ -233,74 +150,32 @@ class CartRepositoryPostgres(
         }
     }
 
-    private fun updateCartTotalInCents(
+    override fun updateCartTotalInCents(
         cartId: CartId,
-        previousCartItem: CartItem?,
-        newCartItem: CartItem,
+        totalInCents: Int,
     ) {
-        if (previousCartItem != null) {
-            require(previousCartItem.item == newCartItem.item) {
-                "Cart items with quantity must be of the same item :: previous = $previousCartItem, new = $newCartItem"
-            }
-        }
-
         val cartSql =
             """
             UPDATE $CARTS_TABLE_NAME
             SET 
-                $TOTAL_IN_CENTS_COLUMN = $TOTAL_IN_CENTS_COLUMN - ? + ?,
+                $TOTAL_IN_CENTS_COLUMN = ?,
                 $UPDATED_AT_COLUMN = now()
             WHERE $ID_COLUMN = ?
             """.trimIndent()
         jdbcTemplate.update(
             cartSql,
-            previousCartItem?.totalInCents() ?: 0,
-            newCartItem.totalInCents(),
+            totalInCents,
             cartId,
         )
     }
 
-    private fun removeCartItem(
-        cartItemId: CartItemId,
-        item: Item?,
-    ) {
-        val cartItemQuantity = getCartItemQuantity(cartItemId) ?: return
-        removeCartItemOnly(cartItemId)
-
-        item?.let {
-            removeCartItemFromTotalInCents(
-                cartId = cartItemId.cartId,
-                cartItem = CartItem(it, cartItemQuantity),
-            )
-        }
-    }
-
-    private fun removeCartItemOnly(cartItemId: CartItemId) {
+    override fun removeCartItem(cartItemId: CartItemId) {
         val sql =
             """
             DELETE FROM $CART_ITEMS_TABLE_NAME 
-            WHERE $CART_ID_COLUMN = ? AND $ITEM_ID_COLUMN = ? AND $ITEM_TYPE_COLUMN = '${cartItemId.itemType.value}'
+            WHERE $CART_ID_COLUMN = ? AND $ITEM_ID_COLUMN = ? AND $ITEM_TYPE_COLUMN = '${cartItemId.cartItemType.toValue()}'
             """.trimIndent()
 
         jdbcTemplate.update(sql, cartItemId.cartId, cartItemId.itemId)
-    }
-
-    private fun removeCartItemFromTotalInCents(
-        cartId: CartId,
-        cartItem: CartItem,
-    ) {
-        val cartSql =
-            """
-            UPDATE $CARTS_TABLE_NAME
-            SET 
-                $TOTAL_IN_CENTS_COLUMN = $TOTAL_IN_CENTS_COLUMN - ?,
-                $UPDATED_AT_COLUMN = now()
-            WHERE $ID_COLUMN = ?
-            """.trimIndent()
-        jdbcTemplate.update(
-            cartSql,
-            cartItem.totalInCents(),
-            cartId,
-        )
     }
 }

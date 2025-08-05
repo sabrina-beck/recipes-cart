@@ -2,6 +2,8 @@ package com.recipescart.repository
 
 import com.recipescart.model.Cart
 import com.recipescart.model.CartId
+import com.recipescart.model.CartItem
+import com.recipescart.model.CartItemId
 import com.recipescart.model.RecipeId
 
 sealed interface UpsertItemInCartResult {
@@ -21,12 +23,19 @@ data class UpsertItemInCart(
 interface CartRepository {
     fun getCartById(id: CartId): Cart?
 
-    fun upsertRecipe(input: UpsertItemInCart): UpsertItemInCartResult
+    fun newCart(): Cart
 
-    fun removeRecipe(
+    fun getCartItemQuantity(cartItemId: CartItemId): Int?
+
+    fun upsertCartItem(
         cartId: CartId,
-        recipeId: RecipeId,
+        cartItem: CartItem,
+    ): UpsertItemInCartResult
+
+    fun updateCartTotalInCents(
+        cartId: CartId,
+        totalInCents: Int,
     )
 
-    fun newCart(): Cart
+    fun removeCartItem(cartItemId: CartItemId)
 }
